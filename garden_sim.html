@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tiny Garden Ultimate — Single File</title>
+<style>
+  :root{
+    --panel-bg:#ffffff;
+    --accent:#4CAF50;
+    --muted:#6b7280;
+    --bg-day:#d0f5d8;
+    --shadow:0 6px 18px rgba(0,0,0,0.12);
+    --ui-radius:12px;
+    font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    min-height:100vh;display:flex;justify-content:center;align-items:center;
+    transition:background 2s linear;background:var(--bg-day);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* Game shell */
+  .game{
+    width:1000px;max-width:96%;display:grid;grid-template-columns:320px 1fr;
+    background:var(--panel-bg);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);
+  }
+  .sidebar{padding:18px;background:linear-gradient(180deg,#f8fff9,#e6f9e6);border-right:2px solid rgba(200,239,200,0.5);display:flex;flex-direction:column;gap:8px}
+  .title{font-size:20px;font-weight:900;color:#0d562b}
+  .money{font-size:18px;color:var(--accent);font-weight:700}
+  .row{font-size:14px;color:var(--muted)}
+
+  .selectPlant{display:flex;flex-direction:column;margin-top:8px;gap:6px}
+  .selectPlant div{padding:8px 10px;background:#f3fff5;border-radius:10px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px;transition:transform .12s,background .12s}
+  .selectPlant div.active, .selectPlant div:hover{background:var(--accent);color:white;transform:translateX(4px)}
+
+  .npcSection,.shopSection,.achievementsSection{margin-top:8px;background:#f3fff5;border-radius:12px;padding:8px}
+  .npc,.shopItem,.achievementItem{padding:8px;margin-top:6px;background:#e6f9e6;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:transform .12s,background .12s}
+  .npc:hover,.shopItem:hover,.achievementItem:hover{transform:translateX(4px);background:#4CAF50;color:white}
+
+  .grid-wrap{padding:18px;background:linear-gradient(180deg,#eaf8ec,#d8f4d8);border-radius:16px;margin:12px;display:flex;justify-content:center;align-items:center}
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;width:100%}
+
+  /* Plot visuals — no hard borders to avoid hairline lines */
+  .plot{
+    min-height:110px;border-radius:14px;background:linear-gradient(180deg,#f6fff6,#e8f6e8);
+    position:relative;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;
+    border:0;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.04), 0 6px 14px rgba(0,0,0,0.06);
+    transition:transform .18s, box-shadow .18s; will-change:transform; transform: translateZ(0);
+    -webkit-backface-visibility:hidden; -webkit-transform: translateZ(0);
+  }
+  .plot:hover{transform:translateY(-3px);box-shadow: inset 0 4px 10px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)}
+  .plant{position:absolute;bottom:44%;text-align:center;font-size:28px;opacity:0;transform:translateY(6%) scale(.95);transition:all .45s cubic-bezier(.25,.8,.25,1)}
+  .plant.show{opacity:1;transform:translateY(0) scale(1)}
+  .progress{position:absolute;bottom:6px;height:6px;width:78%;background:rgba(0,0,0,0.08);border-radius:3px}
+  .progressFill{height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .2s}
+
+  .log{margin-top:8px;font-size:13px;color:var(--muted);height:120px;overflow:auto;padding:8px;border-radius:8px;background:#fbfff9;border:1px solid #e8f4ea}
+  button{padding:8px 10px;border:none;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer}
+  .smallBtn{padding:6px 8px;font-size:13px;border-radius:8px}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:9999}
+  .hidden{display:none}
+  .modalCard{background:white;padding:18px;border-radius:12px;width:90%;max-width:420px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+  .modalCard h2{margin-bottom:8px}
+  .modalBtns{display:flex;gap:10px;justify-content:center;margin-top:12px}
+  .modalNote{margin-top:10px;font-size:13px;color:var(--muted)}
+
+  /* device-specific styles */
+  body.device-mobile .grid{grid-template-columns:repeat(4,1fr)}
+  body.device-mobile .plot{min-height:140px;border-radius:12px}
+  body.device-mobile .selectPlant div{padding:12px;font-size:16px}
+  body.device-mobile .npc,.shopItem{font-size:15px;padding:10px}
+
+  /* responsive */
+  @media(max-width:920px){
+    .game{grid-template-columns:1fr}
+    .grid{grid-template-columns:repeat(4,1fr)}
+    .plot{min-height:90px}
+  }
+</style>
+</head>
+<body>
+  <!-- device modal -->
+  <div id="deviceModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Choose device">
+    <div class="modalCard" role="document">
+      <h2>Which device are you using?</h2>
+      <p class="modalSub">Pick the device so the game adjusts layout and touch controls.</p>
+      <div class="modalBtns">
+        <button id="choosePc">🖥️ PC</button>
+        <button id="chooseMobile">📱 Mobile</button>
+      </div>
+      <div class="modalNote">
+        <label><input id="rememberChoice" type="checkbox" checked> Remember my choice</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="game" id="gameDiv" aria-live="polite">
+    <aside class="sidebar">
+      <div class="title">🌼 Tiny Garden Ultimate</div>
+      <div class="money">Money: $<span id="money">50</span></div>
+      <div class="row">Seeds: <span id="seeds">5</span></div>
+      <div class="row">Pots: <span id="pots">5</span></div>
+
+      <div class="selectPlant" id="plantSelector"></div>
+
+      <div class="npcSection"><strong>NPC Quests:</strong><div id="npcList"></div></div>
+      <div class="shopSection"><strong>Shop:</strong><div id="shopList"></div></div>
+      <div class="achievementsSection"><strong>Achievements:</strong><div id="achievementsList"></div></div>
+
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="saveBtn" class="smallBtn">💾 Save</button>
+        <button id="resetBtn" class="smallBtn">🔄 Reset</button>
+        <button id="changeDeviceBtn" class="smallBtn">Change device</button>
+      </div>
+
+      <div class="log" id="log" aria-live="polite"></div>
+    </aside>
+
+    <main class="main">
+      <div class="grid-wrap"><div class="grid" id="garden" aria-label="Garden plots"></div></div>
+    </main>
+  </div>
+
+<script>
+/* -------------------------
+   Game data and constants
+   ------------------------- */
+const PLANTS = {
+  carrot:     { emoji: '🥕', growthStages: 3, reward: 2, seedCost: 1 },
+  strawberry: { emoji: '🍓', growthStages: 3, reward: 5, seedCost: 2 },
+  apple:      { emoji: '🍎', growthStages: 6, reward: 15, seedCost: 6 }
+};
+const SHOP = [
+  { name: 'Extra Seed', cost: 5, action: () => state.seeds += 1 },
+  { name: 'Extra Pot',  cost: 10, action: () => { state.pots += 1; ensurePlots(); } }
+];
+const ACHIEVEMENTS_DEF = {
+  firstPlant: { text: 'Plant your first seed', done: false },
+  harvest10:  { text: 'Harvest 10 plants', done: false },
+  firstNPC:   { text: 'Complete your first NPC quest', done: false }
+};
+const STORAGE_KEY = 'tinyGardenState_v1';
+const DEVICE_KEY  = 'tinyGardenDevice_v1';
+
+/* -------------------------
+   State with persistence
+   ------------------------- */
+const DEFAULT_STATE = {
+  money: 50, seeds: 5, pots: 5, plots: [], npcs: [], harvested: 0, achievements: JSON.parse(JSON.stringify(ACHIEVEMENTS_DEF))
+};
+let state = loadState() || JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+/* -------------------------
+   DOM refs
+   ------------------------- */
+const gardenEl = document.getElementById('garden');
+const moneyEl = document.getElementById('money');
+const seedsEl = document.getElementById('seeds');
+const potsEl = document.getElementById('pots');
+const plantSelectorEl = document.getElementById('plantSelector');
+const npcListEl = document.getElementById('npcList');
+const shopListEl = document.getElementById('shopList');
+const achievementsListEl = document.getElementById('achievementsList');
+const logEl = document.getElementById('log');
+
+const saveBtn = document.getElementById('saveBtn');
+const resetBtn = document.getElementById('resetBtn');
+const changeDeviceBtn = document.getElementById('changeDeviceBtn');
+
+const deviceModal = document.getElementById('deviceModal');
+const choosePc = document.getElementById('choosePc');
+const chooseMobile = document.getElementById('chooseMobile');
+const rememberChoice = document.getElementById('rememberChoice');
+
+/* -------------------------
+   UI variables
+   ------------------------- */
+let selectedPlantKey = 'carrot';
+
+/* -------------------------
+   Persistence helpers
+   ------------------------- */
+function saveState(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    addLog('Game saved.');
+  } catch(e){ console.warn('save error', e); }
+}
+function loadState(){
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    return s ? JSON.parse(s) : null;
+  } catch(e){ console.warn('load error', e); return null; }
+}
+function resetState(){
+  localStorage.removeItem(STORAGE_KEY);
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  ensurePlots();
+  renderAll();
+  addLog('Progress reset.');
+}
+
+/* -------------------------
+   Logs
+   ------------------------- */
+function addLog(text){
+  const d = document.createElement('div');
+  d.textContent = text;
+  logEl.prepend(d);
+}
+
+/* -------------------------
+   Plots / Garden
+   ------------------------- */
+function makePlot(){ return { planted:false, plantKey:null, growth:0 }; }
+function ensurePlots(){
+  while(state.plots.length < state.pots) state.plots.push(makePlot());
+  while(state.plots.length > state.pots) state.plots.pop();
+}
+
+function renderGarden(){
+  gardenEl.innerHTML = '';
+  state.plots.forEach((plot, i) => {
+    const div = document.createElement('div');
+    div.className = 'plot';
+    div.setAttribute('role','button');
+    div.setAttribute('aria-label', plot.planted ? `${plot.plantKey} growth ${plot.growth}` : 'Empty plot');
+    div.addEventListener('click', ()=> plantOnPlot(i));
+    // planted visuals
+    if(plot.planted){
+      const p = document.createElement('div');
+      p.className = 'plant';
+      p.textContent = PLANTS[plot.plantKey].emoji;
+      div.appendChild(p);
+      // small animation
+      setTimeout(()=>p.classList.add('show'), 10);
+
+      const prog = document.createElement('div');
+      prog.className = 'progress';
+      const fill = document.createElement('div');
+      fill.className = 'progressFill';
+      const pct = Math.min(100, Math.round((plot.growth / PLANTS[plot.plantKey].growthStages) * 100));
+      fill.style.width = pct + '%';
+      prog.appendChild(fill);
+      div.appendChild(prog);
+    }
+    gardenEl.appendChild(div);
+  });
+}
+
+/* -------------------------
+   Planting / Harvesting
+   ------------------------- */
+function plantOnPlot(i){
+  const plot = state.plots[i];
+  if(!plot.planted){
+    // plant if enough seeds
+    const needed = PLANTS[selectedPlantKey].seedCost;
+    if(state.seeds >= needed){
+      state.seeds -= needed;
+      plot.planted = true;
+      plot.plantKey = selectedPlantKey;
+      plot.growth = 0;
+      addLog('Planted ' + selectedPlantKey + ' (cost ' + needed + ' seed' + (needed>1?'s':'') + ')');
+      renderGarden();
+      updateHUD();
+      checkAchievements();
+      autoSaveSoon();
+    } else {
+      addLog('Not enough seeds to plant ' + selectedPlantKey + '.');
+    }
+  } else {
+    // grow / harvest
+    plot.growth++;
+    addLog('Growth +1 on ' + plot.plantKey + ' (stage ' + plot.growth + '/' + PLANTS[plot.plantKey].growthStages + ')');
+    if(plot.growth >= PLANTS[plot.plantKey].growthStages){
+      // harvest
+      state.money += PLANTS[plot.plantKey].reward;
+      state.harvested = (state.harvested || 0) + 1;
+      addLog('Harvested ' + plot.plantKey + ' for $' + PLANTS[plot.plantKey].reward);
+      plot.planted = false; plot.plantKey = null; plot.growth = 0;
+      renderGarden();
+      updateHUD();
+      checkAchievements();
+      autoSaveSoon();
+    } else {
+      // just update progress fill
+      renderGarden();
+    }
+  }
+}
+
+/* -------------------------
+   NPCs (quests)
+   ------------------------- */
+function spawnNPC(){
+  const names = ['Farmer Joe','Baker Sue','Chef Lily','Old Sam','Market Ida'];
+  const emojis = ['👨‍🌾','👩‍🍳','👩‍🍳','👴','👩‍🌾'];
+  const items = Object.keys(PLANTS);
+  const npc = {
+    name: names[Math.floor(Math.random()*names.length)],
+    emoji: emojis[Math.floor(Math.random()*emojis.length)],
+    request: items[Math.floor(Math.random()*items.length)]
+  };
+  state.npcs.push(npc);
+  renderNPCs();
+}
+function renderNPCs(){
+  npcListEl.innerHTML = '';
+  state.npcs.forEach((n, i) => {
+    const div = document.createElement('div');
+    div.className = 'npc';
+    div.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><span>${n.emoji}</span><div style="min-width:120px">${n.name} wants ${n.request}</div></div><div style="opacity:.9">Give</div>`;
+    div.addEventListener('click', ()=> giveItemToNPC(i));
+    npcListEl.appendChild(div);
+  });
+}
+function giveItemToNPC(index){
+  const npc = state.npcs[index];
+  const neededSeeds = PLANTS[npc.request].seedCost;
+  if(state.seeds >= neededSeeds){
+    state.seeds -= neededSeeds;
+    state.money += 5;
+    addLog('Gave ' + npc.request + ' to ' + npc.name + ' for $5 (used ' + neededSeeds + ' seeds)');
+    state.npcs.splice(index,1);
+    renderNPCs();
+    updateHUD();
+    checkAchievements(true);
+    autoSaveSoon();
+  } else {
+    addLog(npc.name + ' wants ' + npc.request + ' but you don\'t have enough seeds!');
+  }
+}
+
+/* -------------------------
+   Shop
+   ------------------------- */
+function renderShop(){
+  shopListEl.innerHTML = '';
+  SHOP.forEach((s, idx) => {
+    const div = document.createElement('div');
+    div.className = 'shopItem';
+    div.innerHTML = `<div>${s.name}</div><div>$${s.cost}</div>`;
+    div.addEventListener('click', ()=>{
+      if(state.money >= s.cost){
+        state.money -= s.cost;
+        s.action();
+        addLog('Bought ' + s.name + ' for $' + s.cost);
+        updateHUD();
+        renderGarden(); renderShop();
+        autoSaveSoon();
+      } else {
+        addLog('Not enough money for ' + s.name);
+      }
+    });
+    shopListEl.appendChild(div);
+  });
+}
+
+/* -------------------------
+   Achievements
+   ------------------------- */
+function renderAchievements(){
+  achievementsListEl.innerHTML = '';
+  for(const k in state.achievements){
+    const ach = state.achievements[k];
+    const div = document.createElement('div');
+    div.className = 'achievementItem';
+    div.textContent = (ach.done ? '✅ ' : '⬜ ') + ach.text;
+    achievementsListEl.appendChild(div);
+  }
+}
+function checkAchievements(npc=false){
+  if((state.harvested || 0) >= 1 && !state.achievements.firstPlant.done){
+    state.achievements.firstPlant.done = true;
+    addLog('Achievement unlocked: ' + state.achievements.firstPlant.text);
+  }
+  if((state.harvested || 0) >= 10 && !state.achievements.harvest10.done){
+    state.achievements.harvest10.done = true;
+    addLog('Achievement unlocked: ' + state.achievements.harvest10.text);
+  }
+  if(npc && !state.achievements.firstNPC.done){
+    state.achievements.firstNPC.done = true;
+    addLog('Achievement unlocked: ' + state.achievements.firstNPC.text);
+  }
+  renderAchievements();
+}
+
+/* -------------------------
+   HUD & Render
+   ------------------------- */
+function updateHUD(){
+  moneyEl.textContent = Math.floor(state.money);
+  seedsEl.textContent = state.seeds;
+  potsEl.textContent = state.pots;
+}
+
+function buildPlantOptions(){
+  plantSelectorEl.innerHTML = '';
+  for(const key in PLANTS){
+    const p = PLANTS[key];
+    const el = document.createElement('div');
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><div style="font-size:18px">${p.emoji}</div><div style="text-transform:capitalize">${key}</div></div>`;
+    el.addEventListener('click', ()=>{
+      selectedPlantKey = key;
+      document.querySelectorAll('.selectPlant div').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+    });
+    plantSelectorEl.appendChild(el);
+  }
+  document.querySelector('.selectPlant div')?.classList.add('active');
+}
+
+function renderAll(){
+  ensurePlots();
+  renderGarden();
+  renderNPCs();
+  renderShop();
+  renderAchievements();
+  updateHUD();
+}
+
+/* -------------------------
+   Background (day/night)
+   ------------------------- */
+function updateBackground(){
+  const hour = new Date().getHours() / 24;
+  const r = Math.floor(208 - 50*hour);
+  const g = Math.floor(245 - 50*hour);
+  const b = Math.floor(216 - 100*hour);
+  document.body.style.background = 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+setInterval(updateBackground, 1000);
+
+/* -------------------------
+   Device modal logic
+   ------------------------- */
+function showDeviceModal(){
+  deviceModal.classList.remove('hidden');
+}
+function hideDeviceModal(){
+  deviceModal.classList.add('hidden');
+}
+function applyDevice(device){
+  if(device === 'mobile'){
+    document.body.classList.add('device-mobile');
+  } else {
+    document.body.classList.remove('device-mobile');
+  }
+  localStorage.setItem(DEVICE_KEY, device);
+}
+choosePc.addEventListener('click', ()=>{
+  if(rememberChoice.checked) applyDevice('pc');
+  else applyDevice('pc');
+  hideDeviceModal();
+});
+chooseMobile.addEventListener('click', ()=>{
+  if(rememberChoice.checked) applyDevice('mobile');
+  else applyDevice('mobile');
+  hideDeviceModal();
+});
+changeDeviceBtn.addEventListener('click', ()=>{
+  // show modal and allow change
+  deviceModal.classList.remove('hidden');
+});
+
+/* -------------------------
+   Auto spawn NPCs + autosave
+   ------------------------- */
+let npcTimer = setInterval(()=> {
+  // spawn with low probability if less than 3 NPCs
+  if(state.npcs.length < 3 && Math.random() < 0.45) {
+    spawnNPC();
+  }
+}, 7000);
+
+let autosaveTimer = setInterval(()=> {
+  saveState();
+}, 10000);
+
+let autoSavePending = false;
+function autoSaveSoon(){
+  if(autoSavePending) return;
+  autoSavePending = true;
+  setTimeout(()=>{ saveState(); autoSavePending = false; }, 1500);
+}
+
+/* -------------------------
+   Save / Reset handlers
+   ------------------------- */
+saveBtn.addEventListener('click', ()=> saveState());
+resetBtn.addEventListener('click', ()=> {
+  if(confirm('Reset saved progress? This cannot be undone.')) resetState();
+});
+
+/* -------------------------
+   Init sequence
+   ------------------------- */
+function initDeviceChoice(){
+  const deviceSaved = localStorage.getItem(DEVICE_KEY);
+  if(deviceSaved){
+    applyDevice(deviceSaved);
+  } else {
+    // show modal
+    showDeviceModal();
+  }
+}
+
+function initGame(){
+  // ensure achievements object exists (in case of older saves)
+  if(!state.achievements) state.achievements = JSON.parse(JSON.stringify(ACHIEVEMENTS_DEF));
+  ensurePlots();
+  buildPlantOptions();
+  renderAll();
+  initDeviceChoice();
+  addLog('Welcome to Tiny Garden Ultimate — click plots to plant/grow, click NPC to give items.');
+}
+
+/* -------------------------
+   Load state and start
+   ------------------------- */
+initGame();
+
+/* -------------------------
+   Make sure to save when user leaves
+   ------------------------- */
+window.addEventListener('beforeunload', ()=>{
+  saveState();
+});
+</script>
+</body>
+</html>

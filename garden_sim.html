@@ -3,84 +3,116 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Tiny Garden Ultimate — Single File</title>
+<title>Tiny Garden Ultimate — Upgraded</title>
 <style>
   :root{
     --panel-bg:#ffffff;
-    --accent:#4CAF50;
+    --accent:#33a852;
+    --accent-2:#2e8b3a;
     --muted:#6b7280;
-    --bg-day:#d0f5d8;
-    --shadow:0 6px 18px rgba(0,0,0,0.12);
+    --bg-day:#dff8e6;
+    --bg-night:#0f2b1b;
+    --shadow:0 10px 30px rgba(6,35,12,0.12);
+    --glass: rgba(255,255,255,0.6);
     --ui-radius:12px;
-    font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
     min-height:100vh;display:flex;justify-content:center;align-items:center;
-    transition:background 2s linear;background:var(--bg-day);
+    transition:background 1.6s linear; background:var(--bg-day);
     -webkit-font-smoothing:antialiased;
+    padding:18px;
   }
 
-  /* Game shell */
+  /* Outer card */
   .game{
-    width:1000px;max-width:96%;display:grid;grid-template-columns:320px 1fr;
-    background:var(--panel-bg);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);
+    width:1080px; max-width:100%; display:grid; grid-template-columns:360px 1fr;
+    background:linear-gradient(180deg,#ffffff,#f8fff8); border-radius:16px;
+    overflow:hidden; box-shadow:var(--shadow);
+    min-height:640px;
   }
-  .sidebar{padding:18px;background:linear-gradient(180deg,#f8fff9,#e6f9e6);border-right:2px solid rgba(200,239,200,0.5);display:flex;flex-direction:column;gap:8px}
-  .title{font-size:20px;font-weight:900;color:#0d562b}
-  .money{font-size:18px;color:var(--accent);font-weight:700}
-  .row{font-size:14px;color:var(--muted)}
-
-  .selectPlant{display:flex;flex-direction:column;margin-top:8px;gap:6px}
-  .selectPlant div{padding:8px 10px;background:#f3fff5;border-radius:10px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px;transition:transform .12s,background .12s}
+  /* Sidebar */
+  .sidebar{
+    padding:20px; display:flex; flex-direction:column; gap:10px;
+    border-right: 1px solid rgba(40,120,60,0.06);
+    background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(245,255,245,0.95));
+  }
+  .title{font-size:20px;font-weight:900;color:#0d562b;display:flex;align-items:center;gap:10px}
+  .title .logo{font-size:22px}
+  .hudRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .money{font-size:18px;color:var(--accent);font-weight:800}
+  .badge{background:#f4fff4;padding:6px 8px;border-radius:8px;font-weight:700;color:#164d2f}
+  .muted{color:var(--muted);font-size:14px}
+  .selectPlant{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .selectPlant div{padding:8px 10px;background:#f3fff5;border-radius:10px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:10px;justify-content:space-between;border:1px solid rgba(50,150,70,0.05);transition:transform .12s,background .12s}
   .selectPlant div.active, .selectPlant div:hover{background:var(--accent);color:white;transform:translateX(4px)}
+  .section{background:#f7fff7;border-radius:12px;padding:10px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.02)}
+  .section h4{font-size:14px;margin-bottom:8px}
+  .npc,.shopItem,.achievementItem{padding:8px;margin-top:6px;background:#eaf9ec;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:transform .12s,background .12s}
+  .npc:hover,.shopItem:hover,.achievementItem:hover{transform:translateX(4px);background:var(--accent);color:white}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  button{padding:8px 12px;border:none;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;box-shadow:0 6px 18px rgba(50,150,70,0.12)}
+  button.ghost{background:transparent;color:var(--accent);box-shadow:none;border:1px solid rgba(50,150,70,0.12)}
+  .smallBtn{padding:6px 8px;font-size:13px}
 
-  .npcSection,.shopSection,.achievementsSection{margin-top:8px;background:#f3fff5;border-radius:12px;padding:8px}
-  .npc,.shopItem,.achievementItem{padding:8px;margin-top:6px;background:#e6f9e6;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:transform .12s,background .12s}
-  .npc:hover,.shopItem:hover,.achievementItem:hover{transform:translateX(4px);background:#4CAF50;color:white}
-
-  .grid-wrap{padding:18px;background:linear-gradient(180deg,#eaf8ec,#d8f4d8);border-radius:16px;margin:12px;display:flex;justify-content:center;align-items:center}
+  /* Garden */
+  .main{padding:18px}
+  .sky{height:120px;border-radius:12px;margin-bottom:12px;background:linear-gradient(180deg,rgba(255,255,255,0.0),rgba(255,255,255,0.0));position:relative;overflow:hidden}
+  .sun{position:absolute;right:18px;top:18px;width:64px;height:64px;border-radius:50%;background:linear-gradient(45deg,#fff3b5,#ffd76b);box-shadow:0 8px 30px rgba(255,170,0,0.15);transform:translateY(0);transition:transform 1s}
+  .moon{position:absolute;right:18px;top:18px;width:50px;height:50px;border-radius:50%;background:linear-gradient(180deg,#e6f0ff,#cfe2ff);box-shadow:0 6px 18px rgba(20,40,90,0.08);opacity:0;transition:opacity 0.9s}
+  .grid-wrap{padding:18px;background:linear-gradient(180deg,#eaf8ec,#d8f4d8);border-radius:12px;display:flex;flex-direction:column;gap:12px;min-height:420px}
   .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;width:100%}
 
-  /* Plot visuals — no hard borders to avoid hairline lines */
+  /* Plot visuals — hairline fix: no hard border */
   .plot{
-    min-height:110px;border-radius:14px;background:linear-gradient(180deg,#f6fff6,#e8f6e8);
+    min-height:120px;border-radius:14px;background:linear-gradient(180deg,#f6fff6,#e8f6e8);
     position:relative;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;
     border:0;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.04), 0 6px 14px rgba(0,0,0,0.06);
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.03), 0 10px 28px rgba(0,0,0,0.05);
     transition:transform .18s, box-shadow .18s; will-change:transform; transform: translateZ(0);
-    -webkit-backface-visibility:hidden; -webkit-transform: translateZ(0);
+    -webkit-backface-visibility:hidden;
   }
-  .plot:hover{transform:translateY(-3px);box-shadow: inset 0 4px 10px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.08)}
-  .plant{position:absolute;bottom:44%;text-align:center;font-size:28px;opacity:0;transform:translateY(6%) scale(.95);transition:all .45s cubic-bezier(.25,.8,.25,1)}
+  .plot:hover{transform:translateY(-6px);box-shadow: inset 0 6px 12px rgba(0,0,0,0.05), 0 20px 38px rgba(0,0,0,0.08)}
+  .soil{position:absolute;bottom:0;left:0;right:0;height:36px;border-bottom-left-radius:14px;border-bottom-right-radius:14px;background:linear-gradient(180deg,#7a4d2a,#5b3216);box-shadow:inset 0 2px 6px rgba(0,0,0,0.2)}
+  .plant{position:absolute;bottom:46px;text-align:center;font-size:28px;opacity:0;transform:translateY(6%) scale(.95);transition:all .45s cubic-bezier(.25,.8,.25,1)}
   .plant.show{opacity:1;transform:translateY(0) scale(1)}
-  .progress{position:absolute;bottom:6px;height:6px;width:78%;background:rgba(0,0,0,0.08);border-radius:3px}
-  .progressFill{height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .2s}
+  .plant.small{font-size:20px}
+  .plant.medium{font-size:28px}
+  .plant.large{font-size:36px}
+  .progress{position:absolute;bottom:8px;height:6px;width:78%;background:rgba(0,0,0,0.08);border-radius:6px}
+  .progressFill{height:100%;width:0;background:var(--accent);border-radius:6px;transition:width .2s}
 
-  .log{margin-top:8px;font-size:13px;color:var(--muted);height:120px;overflow:auto;padding:8px;border-radius:8px;background:#fbfff9;border:1px solid #e8f4ea}
-  button{padding:8px 10px;border:none;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer}
-  .smallBtn{padding:6px 8px;font-size:13px;border-radius:8px}
+  /* pests */
+  .pest{position:absolute;top:8px;left:8px;font-size:20px;cursor:pointer;transform:translateZ(0);text-shadow:0 2px 6px rgba(0,0,0,0.2)}
 
-  /* Modal */
+  /* toast */
+  .toastWrap{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:9999}
+  .toast{background:rgba(12,80,34,0.95);color:white;padding:8px 12px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.25);font-weight:700;opacity:0;transform:translateY(10px);transition:opacity .28s,transform .28s}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  .log{margin-top:8px;font-size:13px;color:var(--muted);height:110px;overflow:auto;padding:8px;border-radius:8px;background:#fbfff9;border:1px solid #e8f4ea}
+
+  /* responsive / device modal */
   .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:9999}
   .hidden{display:none}
-  .modalCard{background:white;padding:18px;border-radius:12px;width:90%;max-width:420px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
-  .modalCard h2{margin-bottom:8px}
+  .modalCard{background:white;padding:18px;border-radius:12px;width:92%;max-width:420px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
   .modalBtns{display:flex;gap:10px;justify-content:center;margin-top:12px}
   .modalNote{margin-top:10px;font-size:13px;color:var(--muted)}
 
-  /* device-specific styles */
+  /* mobile tweaks */
   body.device-mobile .grid{grid-template-columns:repeat(4,1fr)}
-  body.device-mobile .plot{min-height:140px;border-radius:12px}
+  body.device-mobile .plot{min-height:150px}
   body.device-mobile .selectPlant div{padding:12px;font-size:16px}
   body.device-mobile .npc,.shopItem{font-size:15px;padding:10px}
 
-  /* responsive */
-  @media(max-width:920px){
-    .game{grid-template-columns:1fr}
+  /* small screens */
+  @media(max-width:980px){
+    .game{grid-template-columns:1fr;min-height:700px}
     .grid{grid-template-columns:repeat(4,1fr)}
-    .plot{min-height:90px}
+    .plot{min-height:110px}
+    .sun{right:10px;top:8px;width:52px;height:52px}
   }
 </style>
 </head>
@@ -88,72 +120,118 @@
   <!-- device modal -->
   <div id="deviceModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Choose device">
     <div class="modalCard" role="document">
-      <h2>Which device are you using?</h2>
-      <p class="modalSub">Pick the device so the game adjusts layout and touch controls.</p>
-      <div class="modalBtns">
+      <h2 style="margin-bottom:6px">Which device are you using?</h2>
+      <p class="modalSub">Helps the game adjust layout & touch sizes for the best experience.</p>
+      <div class="modalBtns" style="margin-top:12px">
         <button id="choosePc">🖥️ PC</button>
         <button id="chooseMobile">📱 Mobile</button>
       </div>
       <div class="modalNote">
-        <label><input id="rememberChoice" type="checkbox" checked> Remember my choice</label>
+        <label style="display:flex;gap:8px;align-items:center"><input id="rememberChoice" type="checkbox" checked> Remember my choice</label>
       </div>
     </div>
   </div>
 
+  <div class="toastWrap" id="toastWrap" aria-live="polite"></div>
+
   <div class="game" id="gameDiv" aria-live="polite">
-    <aside class="sidebar">
-      <div class="title">🌼 Tiny Garden Ultimate</div>
-      <div class="money">Money: $<span id="money">50</span></div>
-      <div class="row">Seeds: <span id="seeds">5</span></div>
-      <div class="row">Pots: <span id="pots">5</span></div>
+    <aside class="sidebar" role="complementary">
+      <div class="title"><span class="logo">🌼</span> Tiny Garden Ultimate</div>
 
-      <div class="selectPlant" id="plantSelector"></div>
+      <div class="hudRow">
+        <div class="money">Money: $<span id="money">50</span></div>
+        <div class="badge">Seeds: <span id="seeds">5</span></div>
+        <div class="badge">Pots: <span id="pots">5</span></div>
+      </div>
 
-      <div class="npcSection"><strong>NPC Quests:</strong><div id="npcList"></div></div>
-      <div class="shopSection"><strong>Shop:</strong><div id="shopList"></div></div>
-      <div class="achievementsSection"><strong>Achievements:</strong><div id="achievementsList"></div></div>
+      <div class="section">
+        <h4>Plant Selector</h4>
+        <div class="selectPlant" id="plantSelector" aria-label="Plant selector"></div>
+      </div>
 
-      <div style="display:flex;gap:8px;margin-top:8px">
+      <div class="section">
+        <h4>NPC Quests</h4>
+        <div id="npcList"></div>
+      </div>
+
+      <div class="section">
+        <h4>Shop</h4>
+        <div id="shopList"></div>
+      </div>
+
+      <div class="section">
+        <h4>Achievements</h4>
+        <div id="achievementsList"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:6px">
         <button id="saveBtn" class="smallBtn">💾 Save</button>
-        <button id="resetBtn" class="smallBtn">🔄 Reset</button>
-        <button id="changeDeviceBtn" class="smallBtn">Change device</button>
+        <button id="resetBtn" class="smallBtn ghost">🔁 Reset</button>
+        <button id="changeDeviceBtn" class="smallBtn ghost">Change device</button>
       </div>
 
       <div class="log" id="log" aria-live="polite"></div>
     </aside>
 
-    <main class="main">
-      <div class="grid-wrap"><div class="grid" id="garden" aria-label="Garden plots"></div></div>
+    <main class="main" role="main">
+      <div class="sky" aria-hidden="true">
+        <div class="sun" id="sunEl" title="Sun"></div>
+        <div class="moon" id="moonEl" title="Moon"></div>
+      </div>
+
+      <div class="grid-wrap">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;gap:10px;align-items:center">
+            <div class="badge">Water Cans: <span id="waterCans">0</span></div>
+            <div class="badge">Fertilizers: <span id="fertCount">0</span></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button id="useWaterBtn" class="smallBtn">💧 Use Water</button>
+            <button id="fertBtn" class="smallBtn">🌿 Fertilize</button>
+          </div>
+        </div>
+
+        <div class="grid" id="garden" aria-label="Garden plots"></div>
+      </div>
     </main>
   </div>
 
 <script>
 /* -------------------------
-   Game data and constants
+   Data & constants
    ------------------------- */
 const PLANTS = {
   carrot:     { emoji: '🥕', growthStages: 3, reward: 2, seedCost: 1 },
   strawberry: { emoji: '🍓', growthStages: 3, reward: 5, seedCost: 2 },
   apple:      { emoji: '🍎', growthStages: 6, reward: 15, seedCost: 6 }
 };
+
 const SHOP = [
-  { name: 'Extra Seed', cost: 5, action: () => state.seeds += 1 },
-  { name: 'Extra Pot',  cost: 10, action: () => { state.pots += 1; ensurePlots(); } }
+  { id: 'seed', name: 'Extra Seed', cost: 5, action: () => state.seeds += 1 },
+  { id: 'pot',  name: 'Extra Pot', cost: 10, action: () => { state.pots += 1; ensurePlots(); } },
+  { id: 'water',name: 'Buy Water Can (+3)', cost: 8, action: () => state.waterCans += 1 },
+  { id: 'fert', name: 'Fertilizer (+1 growth)', cost: 6, action: () => state.fertCount += 1 }
 ];
+
 const ACHIEVEMENTS_DEF = {
   firstPlant: { text: 'Plant your first seed', done: false },
   harvest10:  { text: 'Harvest 10 plants', done: false },
-  firstNPC:   { text: 'Complete your first NPC quest', done: false }
+  firstNPC:   { text: 'Complete your first NPC quest', done: false },
+  water100:   { text: 'Use water 100 times', done: false }
 };
-const STORAGE_KEY = 'tinyGardenState_v1';
+
+const STORAGE_KEY = 'tinyGardenState_v2';
 const DEVICE_KEY  = 'tinyGardenDevice_v1';
 
 /* -------------------------
-   State with persistence
+   State & persistence
    ------------------------- */
 const DEFAULT_STATE = {
-  money: 50, seeds: 5, pots: 5, plots: [], npcs: [], harvested: 0, achievements: JSON.parse(JSON.stringify(ACHIEVEMENTS_DEF))
+  money: 50, seeds: 5, pots: 6, plots: [], npcs: [], harvested: 0,
+  achievements: JSON.parse(JSON.stringify(ACHIEVEMENTS_DEF)),
+  waterCans: 0, waterUses: 0, fertCount: 0
 };
+
 let state = loadState() || JSON.parse(JSON.stringify(DEFAULT_STATE));
 
 /* -------------------------
@@ -178,6 +256,14 @@ const choosePc = document.getElementById('choosePc');
 const chooseMobile = document.getElementById('chooseMobile');
 const rememberChoice = document.getElementById('rememberChoice');
 
+const toastWrap = document.getElementById('toastWrap');
+const sunEl = document.getElementById('sunEl');
+const moonEl = document.getElementById('moonEl');
+const waterCansEl = document.getElementById('waterCans');
+const fertCountEl = document.getElementById('fertCount');
+const useWaterBtn = document.getElementById('useWaterBtn');
+const fertBtn = document.getElementById('fertBtn');
+
 /* -------------------------
    UI variables
    ------------------------- */
@@ -189,7 +275,7 @@ let selectedPlantKey = 'carrot';
 function saveState(){
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    addLog('Game saved.');
+    showToast('Game saved');
   } catch(e){ console.warn('save error', e); }
 }
 function loadState(){
@@ -199,11 +285,23 @@ function loadState(){
   } catch(e){ console.warn('load error', e); return null; }
 }
 function resetState(){
+  if (!confirm('Reset all progress?')) return;
   localStorage.removeItem(STORAGE_KEY);
   state = JSON.parse(JSON.stringify(DEFAULT_STATE));
   ensurePlots();
   renderAll();
-  addLog('Progress reset.');
+  showToast('Progress reset');
+}
+
+/* -------------------------
+   Toasts
+   ------------------------- */
+function showToast(text, ms=1800){
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = text;
+  toastWrap.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, ms);
 }
 
 /* -------------------------
@@ -211,14 +309,14 @@ function resetState(){
    ------------------------- */
 function addLog(text){
   const d = document.createElement('div');
-  d.textContent = text;
+  const time = new Date(); d.textContent = `[${time.getHours()}:${String(time.getMinutes()).padStart(2,'0')}] ${text}`;
   logEl.prepend(d);
 }
 
 /* -------------------------
    Plots / Garden
    ------------------------- */
-function makePlot(){ return { planted:false, plantKey:null, growth:0 }; }
+function makePlot(){ return { planted:false, plantKey:null, growth:0, pest:false }; }
 function ensurePlots(){
   while(state.plots.length < state.pots) state.plots.push(makePlot());
   while(state.plots.length > state.pots) state.plots.pop();
@@ -232,10 +330,27 @@ function renderGarden(){
     div.setAttribute('role','button');
     div.setAttribute('aria-label', plot.planted ? `${plot.plantKey} growth ${plot.growth}` : 'Empty plot');
     div.addEventListener('click', ()=> plantOnPlot(i));
+
+    // soil area visual
+    const soil = document.createElement('div'); soil.className='soil';
+    div.appendChild(soil);
+
+    // pests
+    if(plot.pest){
+      const pest = document.createElement('div'); pest.className='pest';
+      pest.textContent = '🐛';
+      pest.title = 'Click to remove pest';
+      pest.addEventListener('click', (ev) => { ev.stopPropagation(); removePest(i); });
+      div.appendChild(pest);
+    }
+
     // planted visuals
     if(plot.planted){
       const p = document.createElement('div');
       p.className = 'plant';
+      // size by growth stage
+      const pct = plot.growth / PLANTS[plot.plantKey].growthStages;
+      if(pct < 0.4) p.classList.add('small'); else if(pct < 0.9) p.classList.add('medium'); else p.classList.add('large');
       p.textContent = PLANTS[plot.plantKey].emoji;
       div.appendChild(p);
       // small animation
@@ -245,11 +360,12 @@ function renderGarden(){
       prog.className = 'progress';
       const fill = document.createElement('div');
       fill.className = 'progressFill';
-      const pct = Math.min(100, Math.round((plot.growth / PLANTS[plot.plantKey].growthStages) * 100));
-      fill.style.width = pct + '%';
+      const fillPct = Math.min(100, Math.round((plot.growth / PLANTS[plot.plantKey].growthStages) * 100));
+      fill.style.width = fillPct + '%';
       prog.appendChild(fill);
       div.appendChild(prog);
     }
+
     gardenEl.appendChild(div);
   });
 }
@@ -267,43 +383,187 @@ function plantOnPlot(i){
       plot.planted = true;
       plot.plantKey = selectedPlantKey;
       plot.growth = 0;
-      addLog('Planted ' + selectedPlantKey + ' (cost ' + needed + ' seed' + (needed>1?'s':'') + ')');
-      renderGarden();
-      updateHUD();
-      checkAchievements();
+      addLog('Planted ' + selectedPlantKey);
+      renderGarden(); updateHUD(); checkAchievements();
+      maybeSpawnPestSoon(i);
       autoSaveSoon();
+      showToast(`Planted ${selectedPlantKey}`);
     } else {
-      addLog('Not enough seeds to plant ' + selectedPlantKey + '.');
+      addLog('Not enough seeds to plant ' + selectedPlantKey);
+      showToast('Not enough seeds');
     }
   } else {
     // grow / harvest
+    if(plot.pest){
+      addLog('A pest blocks growth — remove it first!');
+      showToast('Remove pest first');
+      return;
+    }
     plot.growth++;
-    addLog('Growth +1 on ' + plot.plantKey + ' (stage ' + plot.growth + '/' + PLANTS[plot.plantKey].growthStages + ')');
+    addLog('Growth +1 on ' + plot.plantKey + ` (${plot.growth}/${PLANTS[plot.plantKey].growthStages})`);
+    // small harvest chance when growth increases
     if(plot.growth >= PLANTS[plot.plantKey].growthStages){
       // harvest
       state.money += PLANTS[plot.plantKey].reward;
       state.harvested = (state.harvested || 0) + 1;
       addLog('Harvested ' + plot.plantKey + ' for $' + PLANTS[plot.plantKey].reward);
+      harvestEffect(i);
       plot.planted = false; plot.plantKey = null; plot.growth = 0;
-      renderGarden();
-      updateHUD();
-      checkAchievements();
+      renderGarden(); updateHUD(); checkAchievements();
       autoSaveSoon();
+      showToast(`Harvested ${plot.plantKey} +$${PLANTS[plot.plantKey].reward}`);
     } else {
-      // just update progress fill
       renderGarden();
     }
   }
 }
 
 /* -------------------------
-   NPCs (quests)
+   Watering & Fertilizer
+   ------------------------- */
+function useWater(){
+  if(state.waterCans <= 0){
+    showToast('No water cans. Buy one in the shop.');
+    return;
+  }
+  // find first planted plot(s) to water (or water all)
+  let watered = 0;
+  state.plots.forEach(plot => {
+    if(plot.planted && !plot.pest){
+      plot.growth = Math.min(plot.growth + 1, PLANTS[plot.plantKey].growthStages);
+      watered++;
+    }
+  });
+  if(watered > 0){
+    state.waterUses = (state.waterUses||0) + 1;
+    // consume a can if this was the last time for that can (we model cans as count of 3-use items)
+    // simpler: each "water can" gives 3 uses — track waterUsesUsedPerCan? to keep simple, each press consumes 1 can and gives +3 growth uses
+    // We'll instead give each "water can" purchase to increase waterCharges by 3
+  }
+  // simpler: if state.waterCharges exists, use one charge; otherwise if waterCans>0 convert one can to 3 charges
+  if(!state.waterCharges || state.waterCharges <= 0){
+    if(state.waterCans > 0){
+      state.waterCans -= 1;
+      state.waterCharges = (state.waterCharges || 0) + 3;
+      showToast('Opened water can (+3 charges)');
+    } else {
+      showToast('No water cans');
+      return;
+    }
+  }
+  // use one charge to boost all planted plots by 1
+  state.waterCharges -= 1;
+  let count = 0;
+  state.plots.forEach(plot=>{
+    if(plot.planted && !plot.pest){
+      plot.growth = Math.min(plot.growth + 1, PLANTS[plot.plantKey].growthStages);
+      count++;
+    }
+  });
+  addLog('Used water: +' + (count>0? '1 growth to each planted plot' : 'no planted plots'));
+  state.waterUses++;
+  updateHUD(); renderGarden(); checkAchievements();
+  showToast('Water used');
+  autoSaveSoon();
+}
+
+function useFertilizer(){
+  if(state.fertCount<=0){
+    showToast('No fertilizer');
+    return;
+  }
+  // apply +1 growth to all planted
+  let impacted = 0;
+  state.plots.forEach(plot => {
+    if(plot.planted && !plot.pest){
+      plot.growth = Math.min(plot.growth + 1, PLANTS[plot.plantKey].growthStages);
+      impacted++;
+    }
+  });
+  if(impacted>0){
+    state.fertCount--;
+    addLog('Used fertilizer on planted crops (+1)');
+    showToast('Fertilizer applied');
+    renderGarden(); updateHUD(); autoSaveSoon();
+  } else {
+    showToast('No planted crops to fertilize');
+  }
+}
+
+/* -------------------------
+   Pests
+   ------------------------- */
+function maybeSpawnPestSoon(plotIndex){
+  // 20% chance to spawn a pest on that plot after a short time
+  setTimeout(()=>{
+    if(Math.random() < 0.22 && state.plots[plotIndex] && state.plots[plotIndex].planted && !state.plots[plotIndex].pest){
+      state.plots[plotIndex].pest = true;
+      addLog('A pest appeared!');
+      showToast('Pest appeared!');
+      renderGarden();
+      autoSaveSoon();
+    }
+  }, 2200 + Math.random()*3000);
+}
+
+// random pests across garden periodically
+setInterval(()=>{
+  if(Math.random() < 0.2){
+    // pick random planted plot
+    const planted = state.plots.map((p,i)=>p.planted && !p.pest ? i : -1).filter(i=>i>=0);
+    if(planted.length>0){
+      const idx = planted[Math.floor(Math.random()*planted.length)];
+      state.plots[idx].pest = true;
+      addLog('Pest spawned on a crop!');
+      renderGarden(); autoSaveSoon();
+    }
+  }
+}, 9000);
+
+function removePest(i){
+  if(!state.plots[i] || !state.plots[i].pest) return;
+  state.plots[i].pest = false;
+  // reward a small coin for removing pest
+  state.money += 1;
+  addLog('Removed pest — got $1');
+  showToast('Pest removed! +$1');
+  renderGarden(); updateHUD(); checkAchievements(); autoSaveSoon();
+}
+
+/* -------------------------
+   Harvest particle effect (simple) 
+   ------------------------- */
+function harvestEffect(plotIndex){
+  // create small burst of emojis floating up in garden area (temporary)
+  const burst = document.createElement('div');
+  burst.style.position = 'absolute';
+  burst.style.pointerEvents = 'none';
+  burst.style.left = '50%'; burst.style.top = '40%';
+  burst.style.transform = 'translate(-50%,-50%)';
+  document.body.appendChild(burst);
+  const emojis = ['✨','💫','🌱'];
+  for(let i=0;i<6;i++){
+    const e = document.createElement('div');
+    e.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    e.style.position='absolute'; e.style.left = (Math.random()*120 - 60) + 'px'; e.style.top = (Math.random()*40 - 20) + 'px';
+    e.style.opacity = '0.95'; e.style.fontSize = (12 + Math.random()*18) + 'px';
+    e.style.transition = 'transform 900ms ease-out, opacity 900ms';
+    burst.appendChild(e);
+    requestAnimationFrame(()=>{ e.style.transform = `translate(${(Math.random()*160-80)}px,${-100 - Math.random()*80}px)`; e.style.opacity='0';})
+    setTimeout(()=>e.remove(),1000);
+  }
+  setTimeout(()=>burst.remove(),1100);
+}
+
+/* -------------------------
+   NPCs
    ------------------------- */
 function spawnNPC(){
-  const names = ['Farmer Joe','Baker Sue','Chef Lily','Old Sam','Market Ida'];
-  const emojis = ['👨‍🌾','👩‍🍳','👩‍🍳','👴','👩‍🌾'];
+  const names = ['Farmer Joe','Baker Sue','Chef Lily','Old Sam','Market Ida','Trader Tom'];
+  const emojis = ['👨‍🌾','👩‍🍳','👩‍🍳','👴','👩‍🌾','🧑‍🌾'];
   const items = Object.keys(PLANTS);
   const npc = {
+    id: Date.now()+Math.random(),
     name: names[Math.floor(Math.random()*names.length)],
     emoji: emojis[Math.floor(Math.random()*emojis.length)],
     request: items[Math.floor(Math.random()*items.length)]
@@ -314,27 +574,25 @@ function spawnNPC(){
 function renderNPCs(){
   npcListEl.innerHTML = '';
   state.npcs.forEach((n, i) => {
-    const div = document.createElement('div');
-    div.className = 'npc';
-    div.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><span>${n.emoji}</span><div style="min-width:120px">${n.name} wants ${n.request}</div></div><div style="opacity:.9">Give</div>`;
+    const div = document.createElement('div'); div.className='npc';
+    div.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div>${n.emoji}</div><div style="min-width:130px">${n.name} wants <b>${n.request}</b></div></div><div style="opacity:.95">Give</div>`;
     div.addEventListener('click', ()=> giveItemToNPC(i));
     npcListEl.appendChild(div);
   });
 }
 function giveItemToNPC(index){
   const npc = state.npcs[index];
-  const neededSeeds = PLANTS[npc.request].seedCost;
-  if(state.seeds >= neededSeeds){
-    state.seeds -= neededSeeds;
+  const needed = PLANTS[npc.request].seedCost;
+  if(state.seeds >= needed){
+    state.seeds -= needed;
     state.money += 5;
-    addLog('Gave ' + npc.request + ' to ' + npc.name + ' for $5 (used ' + neededSeeds + ' seeds)');
+    addLog(`Gave ${npc.request} to ${npc.name} for $5 (used ${needed} seeds)`);
     state.npcs.splice(index,1);
-    renderNPCs();
-    updateHUD();
-    checkAchievements(true);
-    autoSaveSoon();
+    renderNPCs(); updateHUD(); checkAchievements(true); autoSaveSoon();
+    showToast('NPC satisfied! +$5');
   } else {
-    addLog(npc.name + ' wants ' + npc.request + ' but you don\'t have enough seeds!');
+    addLog(`${npc.name} wants ${npc.request} but you don't have enough seeds`);
+    showToast('Not enough seeds for NPC');
   }
 }
 
@@ -343,23 +601,26 @@ function giveItemToNPC(index){
    ------------------------- */
 function renderShop(){
   shopListEl.innerHTML = '';
-  SHOP.forEach((s, idx) => {
-    const div = document.createElement('div');
-    div.className = 'shopItem';
-    div.innerHTML = `<div>${s.name}</div><div>$${s.cost}</div>`;
-    div.addEventListener('click', ()=>{
-      if(state.money >= s.cost){
-        state.money -= s.cost;
-        s.action();
-        addLog('Bought ' + s.name + ' for $' + s.cost);
-        updateHUD();
-        renderGarden(); renderShop();
-        autoSaveSoon();
+  SHOP.forEach((s)=> {
+    const div = document.createElement('div'); div.className='shopItem';
+    div.innerHTML = `<div style="min-width:140px">${s.name}</div><div style="display:flex;gap:8px;align-items:center"><div>$${s.cost}</div><button class="smallBtn" data-id="${s.id}">Buy</button></div>`;
+    shopListEl.appendChild(div);
+  });
+  // add listeners for buy buttons
+  shopListEl.querySelectorAll('button.smallBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.id;
+      const item = SHOP.find(x=>x.id===id || x.name.toLowerCase().includes(id));
+      if(!item) return;
+      if(state.money >= item.cost){
+        state.money -= item.cost; item.action();
+        addLog(`Bought ${item.name} for $${item.cost}`);
+        renderShop(); updateHUD(); autoSaveSoon(); showToast(`${item.name} bought`);
       } else {
-        addLog('Not enough money for ' + s.name);
+        addLog('Not enough money for ' + item.name);
+        showToast('Not enough money');
       }
     });
-    shopListEl.appendChild(div);
   });
 }
 
@@ -370,35 +631,36 @@ function renderAchievements(){
   achievementsListEl.innerHTML = '';
   for(const k in state.achievements){
     const ach = state.achievements[k];
-    const div = document.createElement('div');
-    div.className = 'achievementItem';
+    const div = document.createElement('div'); div.className='achievementItem';
     div.textContent = (ach.done ? '✅ ' : '⬜ ') + ach.text;
     achievementsListEl.appendChild(div);
   }
 }
 function checkAchievements(npc=false){
   if((state.harvested || 0) >= 1 && !state.achievements.firstPlant.done){
-    state.achievements.firstPlant.done = true;
-    addLog('Achievement unlocked: ' + state.achievements.firstPlant.text);
+    state.achievements.firstPlant.done = true; addLog('Achievement: ' + state.achievements.firstPlant.text); showToast('Achievement unlocked!');
   }
   if((state.harvested || 0) >= 10 && !state.achievements.harvest10.done){
-    state.achievements.harvest10.done = true;
-    addLog('Achievement unlocked: ' + state.achievements.harvest10.text);
+    state.achievements.harvest10.done = true; addLog('Achievement: ' + state.achievements.harvest10.text); showToast('Achievement unlocked!');
   }
   if(npc && !state.achievements.firstNPC.done){
-    state.achievements.firstNPC.done = true;
-    addLog('Achievement unlocked: ' + state.achievements.firstNPC.text);
+    state.achievements.firstNPC.done = true; addLog('Achievement: ' + state.achievements.firstNPC.text); showToast('Achievement unlocked!');
+  }
+  if((state.waterUses || 0) >= 100 && !state.achievements.water100.done){
+    state.achievements.water100.done = true; addLog('Achievement: ' + state.achievements.water100.text); showToast('Achievement unlocked!');
   }
   renderAchievements();
 }
 
 /* -------------------------
-   HUD & Render
+   HUD & render
    ------------------------- */
 function updateHUD(){
   moneyEl.textContent = Math.floor(state.money);
   seedsEl.textContent = state.seeds;
   potsEl.textContent = state.pots;
+  waterCansEl.textContent = state.waterCans || 0;
+  fertCountEl.textContent = state.fertCount || 0;
 }
 
 function buildPlantOptions(){
@@ -406,7 +668,7 @@ function buildPlantOptions(){
   for(const key in PLANTS){
     const p = PLANTS[key];
     const el = document.createElement('div');
-    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><div style="font-size:18px">${p.emoji}</div><div style="text-transform:capitalize">${key}</div></div>`;
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:10px"><div style="font-size:20px">${p.emoji}</div><div style="text-transform:capitalize">${key}</div></div><div style="opacity:.9">${p.seedCost} seed</div>`;
     el.addEventListener('click', ()=>{
       selectedPlantKey = key;
       document.querySelectorAll('.selectPlant div').forEach(x=>x.classList.remove('active'));
@@ -417,26 +679,27 @@ function buildPlantOptions(){
   document.querySelector('.selectPlant div')?.classList.add('active');
 }
 
-function renderAll(){
-  ensurePlots();
-  renderGarden();
-  renderNPCs();
-  renderShop();
-  renderAchievements();
-  updateHUD();
-}
-
 /* -------------------------
-   Background (day/night)
+   Background day/night
    ------------------------- */
 function updateBackground(){
-  const hour = new Date().getHours() / 24;
-  const r = Math.floor(208 - 50*hour);
-  const g = Math.floor(245 - 50*hour);
-  const b = Math.floor(216 - 100*hour);
-  document.body.style.background = 'rgb(' + r + ',' + g + ',' + b + ')';
+  const hr = new Date().getHours();
+  const dayPct = Math.max(0, Math.cos((hr - 12) / 24 * 2 * Math.PI)); // funish mapping
+  // simpler: night between 20-6
+  if(hr >= 18 || hr <= 6){
+    document.body.style.background = 'linear-gradient(180deg,#0f2b1b,#07120a)'; // dark
+    sunEl.style.opacity = '0';
+    moonEl.style.opacity = '1';
+    sunEl.style.transform = 'translateY(40px) scale(.8)';
+  } else {
+    document.body.style.background = 'linear-gradient(180deg,#dff8e6,#bff1d4)';
+    sunEl.style.opacity = '1';
+    moonEl.style.opacity = '0';
+    sunEl.style.transform = 'translateY(0) scale(1)';
+  }
 }
-setInterval(updateBackground, 1000);
+setInterval(updateBackground, 2000);
+updateBackground();
 
 /* -------------------------
    Device modal logic
@@ -456,83 +719,82 @@ function applyDevice(device){
   localStorage.setItem(DEVICE_KEY, device);
 }
 choosePc.addEventListener('click', ()=>{
-  if(rememberChoice.checked) applyDevice('pc');
-  else applyDevice('pc');
+  if(rememberChoice.checked) applyDevice('pc'); else applyDevice('pc');
   hideDeviceModal();
 });
 chooseMobile.addEventListener('click', ()=>{
-  if(rememberChoice.checked) applyDevice('mobile');
-  else applyDevice('mobile');
+  if(rememberChoice.checked) applyDevice('mobile'); else applyDevice('mobile');
   hideDeviceModal();
 });
-changeDeviceBtn.addEventListener('click', ()=>{
-  // show modal and allow change
-  deviceModal.classList.remove('hidden');
-});
+changeDeviceBtn.addEventListener('click', ()=> deviceModal.classList.remove('hidden'));
 
 /* -------------------------
-   Auto spawn NPCs + autosave
+   NPC spawn & autosave timers
    ------------------------- */
-let npcTimer = setInterval(()=> {
-  // spawn with low probability if less than 3 NPCs
-  if(state.npcs.length < 3 && Math.random() < 0.45) {
-    spawnNPC();
-  }
+setInterval(()=> {
+  // spawn NPC occasionally if fewer than 3
+  if(state.npcs.length < 3 && Math.random() < 0.42) spawnNPC();
 }, 7000);
 
-let autosaveTimer = setInterval(()=> {
+setInterval(()=> {
   saveState();
-}, 10000);
+}, 12000);
 
-let autoSavePending = false;
+let autoSavePending=false;
 function autoSaveSoon(){
   if(autoSavePending) return;
   autoSavePending = true;
-  setTimeout(()=>{ saveState(); autoSavePending = false; }, 1500);
+  setTimeout(()=>{ saveState(); autoSavePending=false; }, 1300);
 }
 
 /* -------------------------
    Save / Reset handlers
    ------------------------- */
 saveBtn.addEventListener('click', ()=> saveState());
-resetBtn.addEventListener('click', ()=> {
-  if(confirm('Reset saved progress? This cannot be undone.')) resetState();
-});
+resetBtn.addEventListener('click', ()=> resetState());
 
 /* -------------------------
-   Init sequence
+   Initialization & rendering
    ------------------------- */
+function renderAll(){
+  ensurePlots();
+  renderGarden(); renderNPCs(); renderShop(); renderAchievements(); updateHUD();
+}
+
 function initDeviceChoice(){
   const deviceSaved = localStorage.getItem(DEVICE_KEY);
-  if(deviceSaved){
-    applyDevice(deviceSaved);
-  } else {
-    // show modal
-    showDeviceModal();
-  }
+  if(deviceSaved){ applyDevice(deviceSaved); } else { showDeviceModal(); }
 }
 
 function initGame(){
-  // ensure achievements object exists (in case of older saves)
   if(!state.achievements) state.achievements = JSON.parse(JSON.stringify(ACHIEVEMENTS_DEF));
   ensurePlots();
   buildPlantOptions();
   renderAll();
   initDeviceChoice();
-  addLog('Welcome to Tiny Garden Ultimate — click plots to plant/grow, click NPC to give items.');
+  addLog('Welcome — click plots to plant or grow, remove pests, use water & buy from shop.');
 }
 
-/* -------------------------
-   Load state and start
-   ------------------------- */
-initGame();
+useWaterBtn.addEventListener('click', useWater);
+fertBtn.addEventListener('click', useFertilizer);
 
 /* -------------------------
-   Make sure to save when user leaves
+   Helper & startup
    ------------------------- */
-window.addEventListener('beforeunload', ()=>{
-  saveState();
-});
+function initFromSave(){
+  // migrate older saves
+  if(state.waterCans === undefined) state.waterCans = 0;
+  if(state.waterCharges === undefined) state.waterCharges = 0;
+  if(state.fertCount === undefined) state.fertCount = 0;
+  if(!state.plots) state.plots = [];
+  ensurePlots();
+}
+
+initFromSave();
+initGame();
+
+/* save on close */
+window.addEventListener('beforeunload', ()=> saveState());
 </script>
 </body>
 </html>
